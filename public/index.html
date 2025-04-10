@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claim Report Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">Claim Report Generator</h1>
+    <input id="claimNumber" type="text" placeholder="Enter Claim Number" class="w-full border p-2 rounded mb-4" />
+    <select id="templateType" class="w-full border p-2 rounded mb-4">
+      <option value="OIC">OIC</option>
+      <option value="NIC">NIC</option>
+      <option value="UIIC">UIIC</option>
+      <option value="NIA">NIA</option>
+      <option value="Others">Others</option>
+    </select>
+    <button onclick="generateReport()" class="bg-blue-500 text-white w-full p-2 rounded">Generate Report</button>
+    <p id="status" class="mt-4 text-center text-sm"></p>
+  </div>
+
+  <script>
+    async function generateReport() {
+      const claimNumber = document.getElementById("claimNumber").value.trim();
+      const templateType = document.getElementById("templateType").value;
+      const status = document.getElementById("status");
+
+      if (!claimNumber) {
+        status.textContent = "Please enter a claim number.";
+        return;
+      }
+
+      status.textContent = "Processing...";
+
+      try {
+        const response = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ claimNumber, templateType })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          status.textContent = data.error || "Something went wrong.";
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Claim_${claimNumber}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        status.textContent = "Report downloaded.";
+      } catch (err) {
+        status.textContent = "Error occurred while generating the report.";
+      }
+    }
+  </script>
+</body>
+</html>

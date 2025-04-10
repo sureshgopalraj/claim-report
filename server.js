@@ -48,16 +48,17 @@ app.post("/generate", async (req, res) => {
     const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
     doc.setData({
-      claim_no: row["Claim Number"],
-      patient_name: row["Patient Name"],
-      Policyno: row["Policy No"],
-      doa: row["DOA"],
-      dod: row["DOD"],
-      insured_name: row["Insured Name"],
-      hospital_name: row["Hospital Name"],
-      city: row["City"],
-      state: row["State"]
-    });
+  claim_no: row["ClmID"],
+  patient_name: row["Patient Name"],
+  Policyno: row["PolicyNo"],
+  doa: row["Date of Admission"],
+  dod: row["Clmdod"],
+  insured_name: row["PriBeneficiaryName"],
+  hospital_name: row["HospName"],
+  city: row["CityName"],
+  state: row["HOSPITAL STATE"]
+});
+
 
     doc.render();
 

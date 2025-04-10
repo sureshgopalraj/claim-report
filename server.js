@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // === Public CSV Setup ===
-const CSV_URL = "<YOUR_PUBLISHED_CSV_LINK_HERE>"; // replace this!
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqpE5b51VmS9HHpH4Osv42RqbmauyYGOlZJiCoMgWOAN5JKgDBDfPFITQtZk3LZYDuK/pubhtml"; // Replace this with your public CSV link
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);
@@ -56,4 +56,26 @@ app.post("/generate", async (req, res) => {
       insured_name: row["Insured Name"],
       hospital_name: row["Hospital Name"],
       city: row["City"],
-      state:
+      state: row["State"]
+    });
+
+    doc.render();
+
+    const buffer = doc.getZip().generate({ type: "nodebuffer" });
+    const outputName = `Claim_${claimNumber}.docx`;
+    const outputPath = path.join(__dirname, outputName);
+
+    fs.writeFileSync(outputPath, buffer);
+
+    res.download(outputPath, outputName, () => {
+      fs.unlinkSync(outputPath);
+    });
+  } catch (error) {
+    console.error("Error generating document:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ Server is running and listening on port ${PORT}`);
+});

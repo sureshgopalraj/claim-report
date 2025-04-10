@@ -2,23 +2,6 @@
 // Backend: Node.js + Express + docxtemplater
 // Frontend: HTML + TailwindCSS
 
-// Step 1: Package.json (Initialize Node.js project)
-// Run: npm init -y
-// Install required packages
-// Run: npm install express cors body-parser docxtemplater pizzip fs path axios
-
-// Step 2: Directory structure (example):
-// - public/
-//   - index.html
-// - templates/
-//   - OIC.docx
-//   - NIC.docx
-//   - UIIC.docx
-//   - NIA.docx
-//   - Others.docx
-// - server.js
-
-// === server.js ===
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -36,7 +19,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// === Public CSV Setup ===
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqpE5b51VmS9HHpH4Osv42RqbmauyYGOlZJiCoMgWOAN5JKgDBDfPFITQtZk3LZYDuK/pub?output=csv";
 
 async function getClaimData(claimNumber) {
@@ -47,7 +29,7 @@ async function getClaimData(claimNumber) {
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     const data = Object.fromEntries(headers.map((h, j) => [h, (row[j] || "").trim()]));
-    if (data["ClmID"] === claimNumber.trim()) {
+    if (data["Claim"] === claimNumber.trim()) {
       return data;
     }
   }
@@ -91,17 +73,20 @@ app.post("/generate", async (req, res) => {
     });
 
     doc.setData({
-  claim_no: row["ClmID"] || "NA",
-  patient_name: row["Patient Name"] || "NA",
-  Policyno: row["PolNo"] || "NA",
-  doa: row["Date of Admission"] || "NA",
-  dod: row["Clmdod"] || "NA",
-  insured_name: row["PriBeneficiaryName"] || "NA",
-  hospital_name: row["HospName"] || "NA",
-  city: row["CityName"] || "NA",
-  state: row["HOSPITAL STATE"] || "NA"
-});
-
+      claim_no: row["Claim"] || "NA",
+      patient_name: row["Patient Name"] || "NA",
+      Policyno: row["Policy"] || "NA",
+      doa: row["DOA"] || "NA",
+      dod: row["DOD"] || "NA",
+      insured_name: row["Insured"] || "NA",
+      hospital_name: row["HospName"] || "NA",
+      city: row["City"] || "NA",
+      state: row["State"] || "NA",
+      tpa_name: row["TPA Name"] || "NA",
+      insurance: row["Insurance"] || "NA",
+      claim_type: row["ClmType"] || "NA",
+      hospital_address: row["Hospital Address"] || "NA"
+    });
 
     doc.render();
 

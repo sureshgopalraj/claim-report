@@ -91,16 +91,17 @@ app.post("/generate", async (req, res) => {
     });
 
     doc.setData({
-      claim_no: row["ClmID"],
-      patient_name: row["Patient Name"],
-      Policyno: row["PolicyNo"],
-      doa: row["Date of Admission"],
-      dod: row["Clmdod"],
-      insured_name: row["PriBeneficiaryName"],
-      hospital_name: row["HospName"],
-      city: row["CityName"],
-      state: row["HOSPITAL STATE"]
-    });
+  claim_no: row["ClmID"] || "NA",
+  patient_name: row["Patient Name"] || "NA",
+  Policyno: row["PolNo"] || "NA",
+  doa: row["Date of Admission"] || "NA",
+  dod: row["Clmdod"] || "NA",
+  insured_name: row["PriBeneficiaryName"] || "NA",
+  hospital_name: row["HospName"] || "NA",
+  city: row["CityName"] || "NA",
+  state: row["HOSPITAL STATE"] || "NA"
+});
+
 
     doc.render();
 

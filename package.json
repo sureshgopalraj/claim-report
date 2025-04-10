@@ -1,0 +1,29 @@
+{
+  "name": "claim_report_generator",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sureshgopalraj/claim-report.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sureshgopalraj/claim-report/issues"
+  },
+  "homepage": "https://github.com/sureshgopalraj/claim-report#readme",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "docxtemplater": "^3.61.0",
+    "express": "^5.1.0",
+    "pizzip": "^3.1.8"
+  }
+}

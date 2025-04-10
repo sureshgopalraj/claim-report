@@ -80,3 +80,27 @@ app.post("/generate", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server is running and listening on port ${PORT}`);
 });
+
+async function getClaimData(claimNumber) {
+  const response = await axios.get(CSV_URL);
+  const rows = response.data.split("\n").map(row => row.split(","));
+  const headers = rows[0].map(h => h.trim().replace(/\r/g, ""));
+
+  console.log("Looking for Claim ID:", claimNumber);
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const data = Object.fromEntries(headers.map((h, j) => [h, (row[j] || "").trim()]));
+
+    console.log(`Row ${i} ClmID:`, data["ClmID"]); // Debug log
+
+    if (data["ClmID"] === claimNumber.trim()) {
+      console.log("✅ Claim match found!");
+      return data;
+    }
+  }
+
+  console.log("❌ No claim matched.");
+  return null;
+}
+

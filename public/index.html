@@ -1,64 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claim Report Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white p-8 rounded shadow w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4 text-center">Claim Report Generator</h1>
-    <input id="claimNumber" type="text" placeholder="Enter Claim Number" class="w-full border p-2 rounded mb-4" />
-    <select id="templateType" class="w-full border p-2 rounded mb-4">
-      <option value="OIC">OIC</option>
-      <option value="NIC">NIC</option>
-      <option value="UIIC">UIIC</option>
-      <option value="NIA">NIA</option>
-      <option value="Others">Others</option>
-    </select>
-    <button onclick="generateReport()" class="bg-blue-500 text-white w-full p-2 rounded">Generate Report</button>
-    <p id="status" class="mt-4 text-center text-sm"></p>
+<body class="bg-gray-50">
+  <div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-xl font-bold mb-4 text-center">Claim Report Generator</h1>
+
+    <div class="mb-4">
+      <input id="claimNumber" class="border p-2 w-full" placeholder="Enter Claim Number" />
+      <button onclick="checkClaim()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Search</button>
+    </div>
+
+    <div id="result" class="p-4 bg-gray-100 rounded shadow hidden"></div>
+
+    <div id="generate-section" class="mt-4 hidden">
+      <label for="templateType">Select Template:</label>
+      <select id="templateType" class="ml-2 border p-2">
+        <option value="OIC">OIC</option>
+        <option value="NIC">NIC</option>
+        <option value="UIIC">UIIC</option>
+        <option value="NIA">NIA</option>
+        <option value="Others">Others</option>
+      </select>
+      <button onclick="generateReport()" class="ml-4 bg-green-600 text-white px-4 py-2 rounded">Generate Report</button>
+    </div>
   </div>
 
   <script>
-    async function generateReport() {
+    function checkClaim() {
+      const claimNumber = document.getElementById("claimNumber").value.trim();
+      if (!claimNumber) return alert("Enter a Claim Number");
+
+      fetch("/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimNumber }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const resultDiv = document.getElementById("result");
+          const generateDiv = document.getElementById("generate-section");
+
+          if (data.error) {
+            resultDiv.innerHTML = `<p class="text-red-600">${data.error}</p>`;
+            resultDiv.classList.remove("hidden");
+            generateDiv.classList.add("hidden");
+          } else {
+            const d = data.data;
+            resultDiv.innerHTML = `
+              <p><strong>Claim No:</strong> ${d["ClmID"]}</p>
+              <p><strong>Patient Name:</strong> ${d["Patient Name"]}</p>
+              <p><strong>Policy No:</strong> ${d["PolicyNo"]}</p>
+              <p><strong>DOA:</strong> ${d["Date of Admission"]}</p>
+              <p><strong>DOD:</strong> ${d["Clmdod"]}</p>
+              <p><strong>Insured Name:</strong> ${d["PriBeneficiaryName"]}</p>
+              <p><strong>Hospital:</strong> ${d["HospName"]}</p>
+              <p><strong>City:</strong> ${d["CityName"]}</p>
+              <p><strong>State:</strong> ${d["HOSPITAL STATE"]}</p>
+            `;
+            resultDiv.classList.remove("hidden");
+            generateDiv.classList.remove("hidden");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Error checking claim.");
+        });
+    }
+
+    function generateReport() {
       const claimNumber = document.getElementById("claimNumber").value.trim();
       const templateType = document.getElementById("templateType").value;
-      const status = document.getElementById("status");
 
-      if (!claimNumber) {
-        status.textContent = "Please enter a claim number.";
-        return;
-      }
-
-      status.textContent = "Processing...";
-
-      try {
-        const response = await fetch("/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ claimNumber, templateType })
+      fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimNumber, templateType }),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Error generating report");
+          return response.blob();
+        })
+        .then((blob) => {
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `Claim_${claimNumber}.docx`;
+          link.click();
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Error generating report.");
         });
-
-        if (!response.ok) {
-          const data = await response.json();
-          status.textContent = data.error || "Something went wrong.";
-          return;
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Claim_${claimNumber}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        status.textContent = "Report downloaded.";
-      } catch (err) {
-        status.textContent = "Error occurred while generating the report.";
-      }
     }
   </script>
 </body>

@@ -14,7 +14,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqpE5b51VmS9HHpH4Osv42RqbmauyYGOlZJiCoMgWOAN5JKgDBDfPFITQtZk3LZYDuK/pub?output=csv";
+const CSV_URL = "const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYjPh5a9Kxd3PMtmRYlgGati7lHn7di8q7J2XqTfrS_UJdQaIUpOfAjn-9u1mF0ECRytxmUYlKAAzc/pub?gid=0&single=true&output=csv";
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);

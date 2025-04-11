@@ -1,100 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claim Report Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Claim Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f8f9fa;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 0.6rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #eef;
+      border-radius: 5px;
+    }
+    .field {
+      margin-bottom: 0.5rem;
+    }
+    .label {
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-  <div class="max-w-2xl mx-auto p-6">
-    <h1 class="text-xl font-bold mb-4 text-center">Claim Report Generator</h1>
+<body>
+  <div class="container">
+    <h2>Claim Search</h2>
+    <input type="text" id="claimInput" placeholder="Enter Claim Number" />
+    <button onclick="searchClaim()">Search</button>
 
-    <div class="mb-4">
-      <input id="claimNumber" class="border p-2 w-full" placeholder="Enter Claim Number" />
-      <button onclick="checkClaim()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Search</button>
-    </div>
-
-    <div id="result" class="p-4 bg-gray-100 rounded shadow hidden"></div>
-
-    <div id="generate-section" class="mt-4 hidden">
-      <label for="templateType">Select Template:</label>
-      <select id="templateType" class="ml-2 border p-2">
-        <option value="OIC">OIC</option>
-        <option value="NIC">NIC</option>
-        <option value="UIIC">UIIC</option>
-        <option value="NIA">NIA</option>
-        <option value="Others">Others</option>
-      </select>
-      <button onclick="generateReport()" class="ml-4 bg-green-600 text-white px-4 py-2 rounded">Generate Report</button>
+    <div id="result" class="result" style="display: none;">
+      <div class="field"><span class="label">Claim No:</span> <span id="claim_no"></span></div>
+      <div class="field"><span class="label">Patient Name:</span> <span id="patient_name"></span></div>
+      <div class="field"><span class="label">Policy No:</span> <span id="policy_no"></span></div>
+      <div class="field"><span class="label">DOA:</span> <span id="doa"></span></div>
+      <div class="field"><span class="label">DOD:</span> <span id="dod"></span></div>
+      <div class="field"><span class="label">Hospital:</span> <span id="hospital_name"></span></div>
+      <div class="field"><span class="label">City:</span> <span id="city"></span></div>
+      <div class="field"><span class="label">State:</span> <span id="state"></span></div>
     </div>
   </div>
 
   <script>
-    function checkClaim() {
-      const claimNumber = document.getElementById("claimNumber").value.trim();
-      if (!claimNumber) return alert("Enter a Claim Number");
+    async function searchClaim() {
+      const claimNo = document.getElementById("claimInput").value.trim();
+      if (!claimNo) return alert("Please enter a Claim Number");
 
-      fetch("/check", {
+      const res = await fetch("/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimNumber }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          const resultDiv = document.getElementById("result");
-          const generateDiv = document.getElementById("generate-section");
+        body: JSON.stringify({ claimNumber: claimNo })
+      });
 
-          if (data.error) {
-            resultDiv.innerHTML = `<p class="text-red-600">${data.error}</p>`;
-            resultDiv.classList.remove("hidden");
-            generateDiv.classList.add("hidden");
-          } else {
-            const d = data.data;
-            resultDiv.innerHTML = `
-              <p><strong>Claim No:</strong> ${d["ClmID"]}</p>
-              <p><strong>Patient Name:</strong> ${d["Patient Name"]}</p>
-              <p><strong>Policy No:</strong> ${d["PolicyNo"]}</p>
-              <p><strong>DOA:</strong> ${d["Date of Admission"]}</p>
-              <p><strong>DOD:</strong> ${d["Clmdod"]}</p>
-              <p><strong>Insured Name:</strong> ${d["PriBeneficiaryName"]}</p>
-              <p><strong>Hospital:</strong> ${d["HospName"]}</p>
-              <p><strong>City:</strong> ${d["CityName"]}</p>
-              <p><strong>State:</strong> ${d["HOSPITAL STATE"]}</p>
-            `;
-            resultDiv.classList.remove("hidden");
-            generateDiv.classList.remove("hidden");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          alert("Error checking claim.");
-        });
-    }
+      const data = await res.json();
 
-    function generateReport() {
-      const claimNumber = document.getElementById("claimNumber").value.trim();
-      const templateType = document.getElementById("templateType").value;
-
-      fetch("/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimNumber, templateType }),
-      })
-        .then((response) => {
-          if (!response.ok) throw new Error("Error generating report");
-          return response.blob();
-        })
-        .then((blob) => {
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `Claim_${claimNumber}.docx`;
-          link.click();
-        })
-        .catch((error) => {
-          console.error(error);
-          alert("Error generating report.");
-        });
+      if (data.success) {
+        const row = data.data;
+        document.getElementById("result").style.display = "block";
+        document.getElementById("claim_no").innerText = row.claim_no || "NA";
+        document.getElementById("patient_name").innerText = row.patient_name || "NA";
+        document.getElementById("policy_no").innerText = row.Policyno || "NA";
+        document.getElementById("doa").innerText = row.doa || "NA";
+        document.getElementById("dod").innerText = row.dod || "NA";
+        document.getElementById("hospital_name").innerText = row.hospital_name || "NA";
+        document.getElementById("city").innerText = row.city || "NA";
+        document.getElementById("state").innerText = row.state || "NA";
+      } else {
+        alert("Claim not found!");
+        document.getElementById("result").style.display = "none";
+      }
     }
   </script>
 </body>

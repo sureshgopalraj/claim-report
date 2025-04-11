@@ -26,26 +26,27 @@ async function getClaimData(claimNumber) {
   const rows = response.data.split("\n").map(row => row.split(","));
 
   for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (row[1]?.trim() === claimNumber.trim()) {
+    const row = rows[i].map(cell => cell?.trim());
+
+    if (row[1] === claimNumber) {
       return {
-        tpa_name: row[0]?.trim(),            // A - TPA Name
-        claim_no: row[1]?.trim(),            // B - Claim
-        insurance: row[2]?.trim(),           // C - Insurance
-        claim_type: row[3]?.trim(),          // D - ClmType
-        patient_name: row[12]?.trim(),       // M - Patient Name
-        doa: row[16]?.trim(),                // Q - DOA
-        illness: row[17]?.trim(),            // R - Illness
-        hospital_name: row[18]?.trim(),      // S - HospName
-        state: row[19]?.trim(),              // T - State
-        city: row[20]?.trim(),               // U - City
-        Policyno: row[23]?.trim(),           // X - Policy
-        hospital_address: row[26]?.trim(),   // AA - Hospital Address
-        dod: row[27]?.trim(),                // AB - DOD
-        insured_name: row[28]?.trim()        // AC - Insured
+        tpa_name: row[0],
+        claim_no: row[1],
+        insurance: row[2],
+        claim_type: row[3],
+        patient_name: row[12],
+        doa: row[16],
+        hospital_name: row[18],
+        state: row[19],
+        city: row[20],
+        Policyno: row[23],
+        hospital_address: row[26],
+        dod: row[27],
+        insured_name: row[28]
       };
     }
   }
+
   return null;
 }
 

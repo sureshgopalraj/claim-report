@@ -63,7 +63,7 @@ app.post("/generate", async (req, res) => {
       return res.status(404).json({ error: "Claim not found" });
     }
 
-    const templatePath = path.join(__dirname, "templates", `${templateType}.docx`);
+    const templatePath = path.join(__dirname, "templates", `${templateType}_Template.docx`);
     const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
     const doc = new Docxtemplater(zip, {
@@ -73,20 +73,21 @@ app.post("/generate", async (req, res) => {
     });
 
     doc.setData({
-      claim_no: row["Claim"] || "NA",
-      patient_name: row["Patient Name"] || "NA",
-      Policyno: row["Policy"] || "NA",
-      doa: row["DOA"] || "NA",
-      dod: row["DOD"] || "NA",
-      insured_name: row["Insured"] || "NA",
-      hospital_name: row["HospName"] || "NA",
-      city: row["City"] || "NA",
-      state: row["State"] || "NA",
-      tpa_name: row["TPA Name"] || "NA",
-      insurance: row["Insurance"] || "NA",
-      claim_type: row["ClmType"] || "NA",
-      hospital_address: row["Hospital Address"] || "NA"
-    });
+  claim_no: row["Claim"],
+  patient_name: row["Patient Name"],
+  Policyno: row["Policy"],
+  doa: row["DOA"],
+  dod: row["DOD"],
+  insured_name: row["Insured"],
+  hospital_name: row["HospName"],
+  hospital_address: row["Hospital Address"],
+  city: row["City"],
+  state: row["State"],
+  tpa_name: row["TPA"],
+  insurance: row["Insurance"],
+  claim_type: row["ClmType"]
+});
+
 
     doc.render();
 

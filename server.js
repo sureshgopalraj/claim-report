@@ -19,7 +19,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const CSV_URL = "<YOUR_PUBLISHED_CSV_LINK_HERE>";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqpE5b51VmS9HHpH4Osv42RqbmauyYGOlZJiCoMgWOAN5JKgDBDfPFITQtZk3LZYDuK/pub?output=csv";
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);

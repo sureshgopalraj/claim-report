@@ -23,35 +23,30 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqp
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);
-  const rows = response.data.split("\n").map(row =>
-    row.replace(/\r/g, "").split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, "").trim())
-  );
+  const rows = response.data.split("\n").map(row => row.split(","));
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-
-    if (row[1] === claimNumber.trim()) {
+    if (row[1]?.trim() === claimNumber.trim()) {
       return {
-        tpa_name: row[0] || "NA",
-        claim_no: row[1] || "NA",
-        insurance: row[2] || "NA",
-        claim_type: row[3] || "NA",
-        patient_name: row[12] || "NA",
-        doa: row[16] || "NA",
-        hospital_name: row[18] || "NA",
-        state: row[19] || "NA",
-        city: row[20] || "NA",
-        Policyno: row[23] || "NA",
-        hospital_address: row[26] || "NA",
-        dod: row[27] || "NA",
-        insured_name: row[28] || "NA"
+        tpa_name: row[0]?.trim(),             // A - TPA Name
+        claim_no: row[1]?.trim(),             // B - Claim
+        insurance: row[2]?.trim(),            // C - Insurance
+        claim_type: row[3]?.trim(),           // D - ClmType
+        patient_name: row[12]?.trim(),        // M - Patient Name
+        doa: row[16]?.trim(),                 // Q - DOA
+        hospital_name: row[18]?.trim(),       // S - HospName
+        state: row[19]?.trim(),               // T - State
+        city: row[20]?.trim(),                // U - City
+        Policyno: row[23]?.trim(),            // X - Policy
+        hospital_address: row[26]?.trim(),    // AA - Hospital Address
+        dod: row[27]?.trim(),                 // AB - DOD
+        insured_name: row[28]?.trim()         // AC - Insured
       };
     }
   }
-
   return null;
 }
-
 
 app.post("/check", async (req, res) => {
   const { claimNumber } = req.body;
@@ -89,7 +84,21 @@ app.post("/generate", async (req, res) => {
       xmlFileTransformer: XmlTemplater
     });
 
-    doc.setData(row);
+    doc.setData({
+      claim_no: row.claim_no || "NA",
+      patient_name: row.patient_name || "NA",
+      Policyno: row.Policyno || "NA",
+      doa: row.doa || "NA",
+      dod: row.dod || "NA",
+      insured_name: row.insured_name || "NA",
+      hospital_name: row.hospital_name || "NA",
+      hospital_address: row.hospital_address || "NA",
+      city: row.city || "NA",
+      state: row.state || "NA",
+      tpa_name: row.tpa_name || "NA",
+      insurance: row.insurance || "NA",
+      claim_type: row.claim_type || "NA"
+    });
 
     doc.render();
 

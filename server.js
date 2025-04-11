@@ -19,18 +19,31 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqpE5b51VmS9HHpH4Osv42RqbmauyYGOlZJiCoMgWOAN5JKgDBDfPFITQtZk3LZYDuK/pub?output=csv";
+const CSV_URL = "<YOUR_PUBLISHED_CSV_LINK_HERE>";
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);
   const rows = response.data.split("\n").map(row => row.split(","));
-  const headers = rows[0].map(h => h.trim().replace(/\r/g, ""));
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    const data = Object.fromEntries(headers.map((h, j) => [h, (row[j] || "").trim()]));
-    if (data["Claim"] === claimNumber.trim()) {
-      return data;
+    if (row[1]?.trim() === claimNumber.trim()) {
+      return {
+        tpa_name: row[0]?.trim(),            // A - TPA Name
+        claim_no: row[1]?.trim(),            // B - Claim
+        insurance: row[2]?.trim(),           // C - Insurance
+        claim_type: row[3]?.trim(),          // D - ClmType
+        patient_name: row[12]?.trim(),       // M - Patient Name
+        doa: row[16]?.trim(),                // Q - DOA
+        illness: row[17]?.trim(),            // R - Illness
+        hospital_name: row[18]?.trim(),      // S - HospName
+        state: row[19]?.trim(),              // T - State
+        city: row[20]?.trim(),               // U - City
+        Policyno: row[23]?.trim(),           // X - Policy
+        hospital_address: row[26]?.trim(),   // AA - Hospital Address
+        dod: row[27]?.trim(),                // AB - DOD
+        insured_name: row[28]?.trim()        // AC - Insured
+      };
     }
   }
   return null;
@@ -63,7 +76,7 @@ app.post("/generate", async (req, res) => {
       return res.status(404).json({ error: "Claim not found" });
     }
 
-    const templatePath = path.join(__dirname, "templates", `${templateType}_Template.docx`);
+    const templatePath = path.join(__dirname, "templates", `${templateType}.docx`);
     const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
     const doc = new Docxtemplater(zip, {
@@ -72,22 +85,7 @@ app.post("/generate", async (req, res) => {
       xmlFileTransformer: XmlTemplater
     });
 
-    doc.setData({
-  claim_no: row["Claim"],
-  patient_name: row["Patient Name"],
-  Policyno: row["Policy"],
-  doa: row["DOA"],
-  dod: row["DOD"],
-  insured_name: row["Insured"],
-  hospital_name: row["HospName"],
-  hospital_address: row["Hospital Address"],
-  city: row["City"],
-  state: row["State"],
-  tpa_name: row["TPA"],
-  insurance: row["Insurance"],
-  claim_type: row["ClmType"]
-});
-
+    doc.setData(row);
 
     doc.render();
 

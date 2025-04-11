@@ -23,32 +23,35 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw1R0AYFOUYzqp
 
 async function getClaimData(claimNumber) {
   const response = await axios.get(CSV_URL);
-  const rows = response.data.split("\n").map(row => row.split(","));
+  const rows = response.data.split("\n").map(row =>
+    row.replace(/\r/g, "").split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, "").trim())
+  );
 
   for (let i = 1; i < rows.length; i++) {
-    const row = rows[i].map(cell => cell?.trim());
+    const row = rows[i];
 
-    if (row[1] === claimNumber) {
+    if (row[1] === claimNumber.trim()) {
       return {
-        tpa_name: row[0],
-        claim_no: row[1],
-        insurance: row[2],
-        claim_type: row[3],
-        patient_name: row[12],
-        doa: row[16],
-        hospital_name: row[18],
-        state: row[19],
-        city: row[20],
-        Policyno: row[23],
-        hospital_address: row[26],
-        dod: row[27],
-        insured_name: row[28]
+        tpa_name: row[0] || "NA",
+        claim_no: row[1] || "NA",
+        insurance: row[2] || "NA",
+        claim_type: row[3] || "NA",
+        patient_name: row[12] || "NA",
+        doa: row[16] || "NA",
+        hospital_name: row[18] || "NA",
+        state: row[19] || "NA",
+        city: row[20] || "NA",
+        Policyno: row[23] || "NA",
+        hospital_address: row[26] || "NA",
+        dod: row[27] || "NA",
+        insured_name: row[28] || "NA"
       };
     }
   }
 
   return null;
 }
+
 
 app.post("/check", async (req, res) => {
   const { claimNumber } = req.body;
